@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+  <changeSet id="001" author="vinh">
+    <createTable tableName="category">
+      <column name="id" type="int">
+        <constraints
+          primaryKeyName="pk-category-id"
+          primaryKey="true"
+        />
+      </column>
+      <column name="name" type="varchar(255)">
+        <constraints
+          uniqueConstraintName="uq-category-name"
+          unique="true"
+        />
+      </column>
+    </createTable>
+
+    <createTable tableName="brand">
+      <column name="id" type="int">
+        <constraints
+          primaryKeyName="pk-brand-id"
+          primaryKey="true"
+        />
+      </column>
+      <column name="name" type="varchar(255)">
+        <constraints
+          uniqueConstraintName="uq-brand-name"
+          unique="true"
+          nullable="false"
+        />
+      </column>
+    </createTable>
+
+    <createTable tableName="product">
+      <column name="id" type="bigint">
+        <constraints primaryKeyName="pk-product-id" primaryKey="true" />
+      </column>
+      <column name="name" type="varchar(255)">
+        <constraints
+          nullable="false"
+        />
+      </column>
+      <column name="category_id" type="int" />
+      <column name="sku" type="varchar(255)" />
+      <column name="price" type="double" />
+      <column name="brand_id" type="int" />
+      <column name="color" type="varchar(255)" />
+    </createTable>
+
+    <createTable tableName="cart">
+      <column name="id" type="varchar(64)">
+        <constraints primaryKeyName="pk-cart-id" primaryKey="true" />
+      </column>
+      <column name="created_date" type="timestamp">
+        <constraints nullable="false" />
+      </column>
+      <column name="updated_date" type="timestamp">
+        <constraints nullable="false" />
+      </column>
+    </createTable>
+
+    <createTable tableName="cart_product">
+      <column name="id" type="bigint">
+        <constraints primaryKeyName="pk-cart-product-id" primaryKey="true" />
+      </column>
+      <column name="cart_id" type="varchar(64)">
+        <constraints nullable="false" />
+      </column>
+      <column name="product_id" type="bigint">
+        <constraints nullable="false" />
+      </column>
+      <column name="amount" type="int">
+        <constraints nullable="false" />
+      </column>
+    </createTable>
+  </changeSet>
+</databaseChangeLog>
