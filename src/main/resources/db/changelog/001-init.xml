@@ -107,5 +107,42 @@
         type="timestamp"
       />
     </createTable>
+    
+    <addForeignKeyConstraint
+      baseTableName="product"
+      baseColumnNames="category_id"
+      constraintName="fk_prod_category"
+      referencedTableName="category"
+      referencedColumnNames="id"
+    />
+    <addForeignKeyConstraint
+      baseTableName="cart_product"
+      baseColumnNames="product_id"
+      constraintName="fk_cart_product_product_id"
+      referencedTableName="product"
+      referencedColumnNames="id"
+    />
+    <addForeignKeyConstraint
+      baseTableName="cart_product"
+      baseColumnNames="cart_id"
+      constraintName="fk_cart_product_cart_id"
+      referencedTableName="cart"
+      referencedColumnNames="id"
+    />
+    <addForeignKeyConstraint
+      baseTableName="customer_order"
+      baseColumnNames="cart_id"
+      constraintName="fk_order_cart_id"
+      referencedTableName="cart"
+      referencedColumnNames="id"
+    />
+
+    <createIndex tableName="product" indexName="idx_product">
+      <column name="category_id" />
+    </createIndex>
+    <createIndex tableName="cart_product"
+      indexName="idx_cart_product">
+      <column name="cart_id" />
+    </createIndex>
   </changeSet>
 </databaseChangeLog>
