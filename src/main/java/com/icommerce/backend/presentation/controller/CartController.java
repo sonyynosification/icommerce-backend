@@ -35,7 +35,8 @@ public class CartController {
       final var cart = cartService.addToCart(request);
       return ResponseEntity.ok(cart);
     } catch (InvalidCartException e) {
-      return ResponseEntity.notFound().build();
+      return ResponseEntity.notFound()
+          .build();
     } catch (InvalidProductException e) {
       return ResponseEntity.badRequest()
           .body(ErrorUtils.createError(HttpStatus.BAD_REQUEST, e.getMessage()))
@@ -47,9 +48,8 @@ public class CartController {
   public ResponseEntity<Object> updateCart(
       @PathVariable("id") String cartId,
       @Valid @RequestBody UpdateCartRequest request) {
-    final var cart = cartService.updateCart(cartId, request);
-
     try {
+      final var cart = cartService.updateCart(cartId, request);
       return ResponseEntity.ok(cart);
     } catch (InvalidCartException e) {
       return ResponseEntity.notFound().build();
@@ -61,7 +61,7 @@ public class CartController {
   }
 
   @PostMapping("/checkout/{id}")
-  public ResponseEntity<?> checkout(@PathVariable("id") String cartId,
+  public ResponseEntity<Object> checkout(@PathVariable("id") String cartId,
       @Valid @RequestBody CheckoutRequest request) {
     try {
       cartService.checkout(cartId, request);
