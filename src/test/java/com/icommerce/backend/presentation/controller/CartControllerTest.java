@@ -13,16 +13,20 @@ import com.icommerce.backend.presentation.request.CheckoutRequest;
 import com.icommerce.backend.presentation.request.UpdateCartRequest;
 import com.icommerce.backend.presentation.response.CartResponse;
 import com.icommerce.backend.service.CartService;
+import com.icommerce.backend.service.mapper.CustomerOrderMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class CartControllerTest {
   @Mock
   private CartService cartService;
+  @Spy
+  private CustomerOrderMapper customerOrderMapper;
 
   @InjectMocks
   private CartController cartController;

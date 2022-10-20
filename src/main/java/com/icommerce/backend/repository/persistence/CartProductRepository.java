@@ -1,4 +1,4 @@
-package com.icommerce.backend.domain.repository;
+package com.icommerce.backend.repository.persistence;
 
 import com.icommerce.backend.domain.entity.CartProduct;
 import java.util.List;

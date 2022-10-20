@@ -1,4 +1,4 @@
-package com.icommerce.backend.domain.converter;
+package com.icommerce.backend.repository.converter;
 
 import com.icommerce.backend.domain.type.PaymentMethod;
 import javax.persistence.Converter;

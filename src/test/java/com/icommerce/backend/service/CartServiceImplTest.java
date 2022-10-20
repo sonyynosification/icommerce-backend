@@ -2,10 +2,12 @@ package com.icommerce.backend.service;
 
 import static com.icommerce.backend.DataUtils.generateCart;
 import static com.icommerce.backend.DataUtils.generateCartProduct;
+import static com.icommerce.backend.DataUtils.generateProduct;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -14,9 +16,12 @@ import com.icommerce.backend.domain.entity.Cart;
 import com.icommerce.backend.domain.entity.CartProduct;
 import com.icommerce.backend.domain.exception.InvalidCartException;
 import com.icommerce.backend.domain.exception.InvalidProductException;
-import com.icommerce.backend.domain.repository.CartProductRepository;
-import com.icommerce.backend.domain.repository.CartRepository;
-import com.icommerce.backend.domain.repository.ProductRepository;
+import com.icommerce.backend.domain.type.CartStatus;
+import com.icommerce.backend.presentation.request.CheckoutRequest;
+import com.icommerce.backend.presentation.response.CostSummary;
+import com.icommerce.backend.repository.persistence.CartProductRepository;
+import com.icommerce.backend.repository.persistence.CartRepository;
+import com.icommerce.backend.repository.persistence.ProductRepository;
 import com.icommerce.backend.presentation.request.AddToCartRequest;
 import com.icommerce.backend.presentation.request.UpdateCartRequest;
 import com.icommerce.backend.presentation.response.CartResponse;
@@ -52,6 +57,8 @@ class CartServiceImplTest {
   private CartProductMapper cartProductMapper = Mappers.getMapper(CartProductMapper.class);
   @Mock
   private CostService costService;
+  @Mock
+  private CustomerOrderService orderService;
 
   @InjectMocks
   private CartServiceImpl cartService;
@@ -71,8 +78,8 @@ class CartServiceImplTest {
   void addToCart_whenCartIdNull() {
     doReturn(generateCart(CART_ID))
         .when(cartRepository).save(any(Cart.class));
-    doReturn(true).when(productRepository)
-        .existsById(1L);
+    doReturn(Optional.of(generateProduct(1L))).when(productRepository)
+        .findById(1L);
 
     AddToCartRequest request = new AddToCartRequest();
     request.setProductId(1L);
@@ -95,8 +102,8 @@ class CartServiceImplTest {
   void addToCart_whenProductIdInvalid() {
     doReturn(Optional.of(generateCart(CART_ID)))
         .when(cartRepository).findById(any(UUID.class));
-    doReturn(false).when(productRepository)
-        .existsById(1L);
+    doReturn(Optional.empty()).when(productRepository)
+        .findById(1L);
 
     AddToCartRequest request = new AddToCartRequest();
     request.setCartId(CART_ID);
@@ -108,8 +115,8 @@ class CartServiceImplTest {
   void addToCart_success() {
     doReturn(Optional.of(generateCart(CART_ID)))
         .when(cartRepository).findById(any(UUID.class));
-    doReturn(true).when(productRepository)
-        .existsById(1L);
+    doReturn(Optional.of(generateProduct(1L))).when(productRepository)
+        .findById(1L);
 
     AddToCartRequest request = new AddToCartRequest();
     request.setCartId(CART_ID);
@@ -201,5 +208,15 @@ class CartServiceImplTest {
 
   }
 
-
+  @Test
+  void checkout_shouldCreateOrder() {
+    doReturn(Optional.of(generateCart(CART_ID)))
+        .when(cartRepository).findById(UUID.fromString(CART_ID));
+    doReturn(new CostSummary()).when(costService).findCost(anyList());
+    cartService.checkout(CART_ID, new CheckoutRequest());
+    verify(cartRepository, times(1)).save(cartCaptor.capture());
+    var savedCart = cartCaptor.getValue();
+    assertEquals(CartStatus.PROCESSING, savedCart.getStatus());
+    verify(orderService, times(1)).createOrder(any(Cart.class), any(CheckoutRequest.class), any());
+  }
 }

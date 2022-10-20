@@ -2,19 +2,25 @@ package com.icommerce.backend;
 
 import com.icommerce.backend.domain.entity.Category;
 import com.icommerce.backend.domain.entity.Product;
-import com.icommerce.backend.domain.repository.CartProductRepository;
-import com.icommerce.backend.domain.repository.CartRepository;
-import com.icommerce.backend.domain.repository.CategoryRepository;
-import com.icommerce.backend.domain.repository.ProductRepository;
+import com.icommerce.backend.repository.persistence.CartProductRepository;
+import com.icommerce.backend.repository.persistence.CartRepository;
+import com.icommerce.backend.repository.persistence.CategoryRepository;
+import com.icommerce.backend.repository.persistence.CustomerOrderRepository;
+import com.icommerce.backend.repository.persistence.ProductRepository;
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.auditing.DateTimeProvider;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
+@EnableJpaAuditing(dateTimeProviderRef = "auditingDateTimeProvider")
 public class BackendApplication {
 
   public static void main(String[] args) {
@@ -27,9 +33,11 @@ public class BackendApplication {
     CategoryRepository categoryRepository,
     ProductRepository productRepository,
     CartRepository cartRepository,
-    CartProductRepository cartProductRepository
+    CartProductRepository cartProductRepository,
+    CustomerOrderRepository customerOrderRepository
   ) {
     return args -> {
+      customerOrderRepository.deleteAll();
       cartProductRepository.deleteAll();
       cartRepository.deleteAll();
       productRepository.deleteAll();
@@ -70,5 +78,10 @@ public class BackendApplication {
       );
       productRepository.saveAll(products);
     };
+  }
+
+  @Bean
+  public DateTimeProvider auditingDateTimeProvider() {
+    return () -> Optional.of(ZonedDateTime.now());
   }
 }

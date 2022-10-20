@@ -17,9 +17,6 @@ import lombok.experimental.Accessors;
 public class CartResponse {
   private String cartId;
   private CartStatus status;
-  private String customerName;
-  private String address;
-  private String phoneNumber;
   private List<CartProduct> products;
   private CostSummary costSummary;
 

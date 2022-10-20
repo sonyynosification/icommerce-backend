@@ -1,0 +1,51 @@
+### Search products without any criterias
+GET http://localhost:8080/product?page=0&limit=2
+
+### Search products on multiple criterias
+GET http://localhost:8080/product?name=shir&brand=Uniqlo
+
+### Get product details
+GET http://localhost:8080/product/1
+
+### Add to new cart
+POST http://localhost:8080/cart
+Content-Type: application/json
+
+{
+  "productId": 2,
+  "amount": 1
+}
+
+### Add to existing cart
+POST http://localhost:8080/cart
+Content-Type: application/json
+
+{
+  "cartId": "049e03e0-8e96-42ff-9f13-c1db45666d16",
+  "productId": 2,
+  "amount": 1
+}
+
+###
+PUT http://localhost:8080/cart/049e03e0-8e96-42ff-9f13-c1db45666d16
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "productId": 1,
+      "amount": 4
+    }
+  ]
+}
+
+###
+POST http://localhost:8080/cart/checkout/f79471bf-0010-4bf0-85ff-af8bed23fdf7
+Content-Type: application/json
+
+{
+  "customerName": "Vinh Truong",
+  "address": "HCM",
+  "phoneNumber": "0776703343",
+  "paymentMethod": "CASH"
+}

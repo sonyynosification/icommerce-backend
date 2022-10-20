@@ -7,7 +7,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.icommerce.backend.domain.entity.Product;
-import com.icommerce.backend.domain.repository.ProductRepository;
+import com.icommerce.backend.repository.persistence.ProductRepository;
 import com.icommerce.backend.presentation.request.SearchProductRequest;
 import com.icommerce.backend.presentation.response.ProductResponse;
 import com.icommerce.backend.service.mapper.ProductMapper;

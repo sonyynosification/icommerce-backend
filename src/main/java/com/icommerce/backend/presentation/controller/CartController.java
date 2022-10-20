@@ -8,6 +8,7 @@ import com.icommerce.backend.presentation.request.UpdateCartRequest;
 import com.icommerce.backend.presentation.response.CartResponse;
 import com.icommerce.backend.presentation.utils.ErrorUtils;
 import com.icommerce.backend.service.CartService;
+import com.icommerce.backend.service.mapper.CustomerOrderMapper;
 import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,9 +25,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class CartController {
 
   private final CartService cartService;
+  private final CustomerOrderMapper customerOrderMapper;
 
-  public CartController(CartService cartService) {
+  public CartController(CartService cartService, CustomerOrderMapper customerOrderMapper) {
     this.cartService = cartService;
+    this.customerOrderMapper = customerOrderMapper;
   }
 
   @PostMapping
@@ -64,8 +67,8 @@ public class CartController {
   public ResponseEntity<Object> checkout(@PathVariable("id") String cartId,
       @Valid @RequestBody CheckoutRequest request) {
     try {
-      cartService.checkout(cartId, request);
-      return ResponseEntity.ok().build();
+      final var customerOrder = cartService.checkout(cartId, request);
+      return ResponseEntity.ok(customerOrderMapper.toResponse(customerOrder));
     } catch (InvalidCartException e) {
       return ResponseEntity.notFound().build();
     }

@@ -3,6 +3,7 @@ package com.icommerce.backend;
 import com.icommerce.backend.domain.entity.Cart;
 import com.icommerce.backend.domain.entity.CartProduct;
 import com.icommerce.backend.domain.entity.Product;
+import com.icommerce.backend.domain.type.CartStatus;
 import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -13,7 +14,14 @@ public class DataUtils {
   public static Cart generateCart(String uuid) {
     Cart cart = new Cart();
     cart.setId(UUID.fromString(uuid));
+    cart.setStatus(CartStatus.NEW);
     return cart;
+  }
+
+  public static Product generateProduct(Long productId) {
+    return Product.builder()
+        .id(productId)
+        .build();
   }
 
   public static CartProduct generateCartProduct(Long productId, Integer amount) {

@@ -1,9 +1,10 @@
 package com.icommerce.backend.service;
 
 import com.icommerce.backend.domain.entity.Product;
-import com.icommerce.backend.domain.repository.ProductRepository;
+import com.icommerce.backend.repository.persistence.ProductRepository;
 import com.icommerce.backend.presentation.request.SearchProductRequest;
 import com.icommerce.backend.presentation.response.ProductResponse;
+import com.icommerce.backend.repository.util.QueryBuilder;
 import com.icommerce.backend.service.mapper.ProductMapper;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.icommerce.backend.domain.entity.QProduct;

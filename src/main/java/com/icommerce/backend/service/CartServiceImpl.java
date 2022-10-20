@@ -1,13 +1,14 @@
 package com.icommerce.backend.service;
 
+import com.icommerce.backend.domain.entity.CustomerOrder;
 import com.icommerce.backend.domain.exception.InvalidCartException;
 import com.icommerce.backend.domain.exception.InvalidProductException;
 import com.icommerce.backend.domain.type.CartStatus;
 import com.icommerce.backend.domain.entity.Cart;
 import com.icommerce.backend.domain.entity.CartProduct;
-import com.icommerce.backend.domain.repository.CartProductRepository;
-import com.icommerce.backend.domain.repository.CartRepository;
-import com.icommerce.backend.domain.repository.ProductRepository;
+import com.icommerce.backend.repository.persistence.CartProductRepository;
+import com.icommerce.backend.repository.persistence.CartRepository;
+import com.icommerce.backend.repository.persistence.ProductRepository;
 import com.icommerce.backend.presentation.request.AddToCartRequest;
 import com.icommerce.backend.presentation.request.CheckoutRequest;
 import com.icommerce.backend.presentation.request.UpdateCartRequest;
@@ -15,15 +16,14 @@ import com.icommerce.backend.presentation.request.UpdateCartRequest.Item;
 import com.icommerce.backend.presentation.response.CartResponse;
 import com.icommerce.backend.service.mapper.CartMapper;
 import com.icommerce.backend.service.mapper.CartProductMapper;
+import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -37,30 +37,34 @@ public class CartServiceImpl implements CartService {
   private final CartRepository cartRepository;
   private final CartProductMapper cartProductMapper;
   private final CartMapper cartMapper;
+  private final CustomerOrderService orderService;
 
   public CartServiceImpl(CostService costService,
       ProductRepository productRepository,
       CartProductRepository cartProductRepository,
       CartRepository cartRepository,
       CartProductMapper cartProductMapper,
-      CartMapper cartMapper) {
+      CartMapper cartMapper,
+      CustomerOrderService orderService) {
     this.costService = costService;
     this.productRepository = productRepository;
     this.cartProductRepository = cartProductRepository;
     this.cartRepository = cartRepository;
     this.cartProductMapper = cartProductMapper;
     this.cartMapper = cartMapper;
+    this.orderService = orderService;
   }
 
   @Override
   @Transactional
   public CartResponse addToCart(AddToCartRequest request) {
     final Cart cart = findOrCreate(request.getCartId());
-
-    // find existing product
-    if (!productRepository.existsById(request.getProductId())) {
-        throw createInvalidProductException(request.getProductId()).get();
+    if (cart.getStatus() != CartStatus.NEW) {
+      throw createInvalidCartException(request.getCartId()).get();
     }
+
+    final var product = productRepository.findById(request.getProductId())
+        .orElseThrow(createInvalidProductException(request.getProductId()));
 
     // find existing products in cart
     final List<CartProduct> existingCartProducts = request.getCartId() == null ?
@@ -74,7 +78,11 @@ public class CartServiceImpl implements CartService {
           existingProduct.setAmount(request.getAmount() + existingProduct.getAmount());
           return existingProduct;
         })
-        .orElseGet(() -> buildProductInCart(request, cart));
+        .orElseGet(() -> {
+          var cartProduct = buildProductInCart(request, cart);
+          cartProduct.setProduct(product);
+          return cartProduct;
+        });
 
     // save cart product
     cartProductRepository.save(addedProduct);
@@ -136,6 +144,7 @@ public class CartServiceImpl implements CartService {
   @Transactional
   public CartResponse updateCart(String cartId, UpdateCartRequest request) {
     final Cart cart = findCart(cartId)
+        .filter(c -> c.getStatus() == CartStatus.NEW)
         .orElseThrow(createInvalidCartException(cartId));
 
     final var updatedItemsByProductId = request.getItems()
@@ -175,16 +184,18 @@ public class CartServiceImpl implements CartService {
 
   @Override
   @Transactional
-  public void checkout(String cartId, CheckoutRequest request) {
+  public CustomerOrder checkout(String cartId, CheckoutRequest request) {
     final var cart = findCart(cartId)
         .filter(c -> c.getStatus() == CartStatus.NEW)
         .orElseThrow(createInvalidCartException(cartId));
 
-    cartMapper.updateDetails(request, cart);
-
     cart.setStatus(CartStatus.PROCESSING);
 
     cartRepository.save(cart);
+
+    final List<CartProduct> productsInCart = findProductsInCart(cart.getId());
+    final BigDecimal amount = costService.findCost(productsInCart).getTotalCost();
+    return orderService.createOrder(cart, request, amount);
   }
 
   @Override

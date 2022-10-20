@@ -1,5 +1,6 @@
 package com.icommerce.backend.service;
 
+import com.icommerce.backend.domain.entity.CustomerOrder;
 import com.icommerce.backend.presentation.request.AddToCartRequest;
 import com.icommerce.backend.presentation.request.CheckoutRequest;
 import com.icommerce.backend.presentation.request.UpdateCartRequest;
@@ -28,10 +29,12 @@ public interface CartService {
 
   /**
    * Checkout a specified cart
+   *
    * @param cartId ID of cart
+   * @return
    * @throws com.icommerce.backend.domain.exception.InvalidCartException when cartId is not valid
    */
-  void checkout(String cartId, CheckoutRequest request);
+  CustomerOrder checkout(String cartId, CheckoutRequest request);
 
   /**
    * Get details of a cart by ID

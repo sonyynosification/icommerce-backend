@@ -1,4 +1,4 @@
-package com.icommerce.backend.service;
+package com.icommerce.backend.repository.util;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import java.util.ArrayList;
 import java.util.List;

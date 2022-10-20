@@ -48,15 +48,6 @@
       <column name="id" type="uuid">
         <constraints primaryKeyName="pk_cart_id" primaryKey="true" />
       </column>
-      <column name="customer_name"
-        type="varchar(255)"
-      />
-      <column name="address"
-        type="varchar(255)"
-      />
-      <column name="phone_number"
-        type="varchar(32)"
-      />
       <column name="status"
         type="smallint"
         />
@@ -83,5 +74,38 @@
       sequenceName="seq_cart_product_id"
       incrementBy="1"
     />
+
+    <createTable tableName="customer_order">
+      <column name="id" type="uuid">
+        <constraints primaryKeyName="pk_customer_order_id" primaryKey="true" />
+      </column>
+      <column name="amount" type="double">
+        <constraints nullable="false" />
+      </column>
+      <column name="customer_name"
+        type="varchar(255)"
+      />
+      <column name="address"
+        type="varchar(255)"
+      />
+      <column name="phone_number"
+        type="varchar(32)"
+      />
+      <column name="payment_method"
+        type="smallint">
+        <constraints nullable="false" />
+      </column>
+      <column name="status"
+        type="smallint"
+      >
+        <constraints nullable="false" />
+      </column>
+      <column name="cart_id" type="uuid">
+        <constraints nullable="false" />
+      </column>
+      <column name="created_date"
+        type="timestamp"
+      />
+    </createTable>
   </changeSet>
 </databaseChangeLog>

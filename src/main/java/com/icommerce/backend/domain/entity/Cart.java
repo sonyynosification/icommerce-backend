@@ -22,11 +22,5 @@ public class Cart {
 
   private CartStatus status;
 
-  private String customerName;
 
-  private String address;
-
-  private String phoneNumber;
-
-  private PaymentMethod paymentMethod;
 }
