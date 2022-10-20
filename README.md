@@ -63,9 +63,13 @@ There are a couple of methods to run this project locally:
 - Or use your favorite IDE.
 - To use preconfigured information for local runs, use `local` profile. E.g:
 ```shell
-./mvnw spring-boot:run -Plocal
+./mvnw spring-boot:run -Dspring-boot.run.profiles=local
 ```
 - To init database with sample data, use `init-sample` profile
+```shell
+./mvnw spring-boot:run -Dspring-boot.run.profiles=local,init-sample
+```
+
 - The default implementation uses H2DB with in-memory database. If you prefer another database (like PostgresQL), please update necessary information in `application-local.properties`.
 - To execute unit tests, run this command
 ```shell
@@ -75,12 +79,224 @@ There are a couple of methods to run this project locally:
 ## API verification
 Hint: If you use IntelliJ IDEA as your IDE, you can execute the sample requests in `requests.http`. 
 ### Search products
+```shell
+curl -X GET --location "http://localhost:8080/product?page=0&limit=5&name=shir&brand=Uniqlo&minPrice=210000&maxPrice=220000&category=1&color=red"
+```
 
+Example response
+```json
+{
+  "content": [
+    {
+      "id": 5,
+      "name": "Shirt A1",
+      "price": 220000.0,
+      "sku": "S00A1R",
+      "color": "red",
+      "brand": "Uniqlo",
+      "category": {
+        "id": 4,
+        "name": "clothing"
+      }
+    }
+  ],
+  "pageable": {
+    "sort": {
+      "sorted": false,
+      "unsorted": true,
+      "empty": true
+    },
+    "pageNumber": 0,
+    "pageSize": 5,
+    "offset": 0,
+    "paged": true,
+    "unpaged": false
+  },
+  "totalPages": 1,
+  "totalElements": 1,
+  "last": true,
+  "first": true,
+  "sort": {
+    "sorted": false,
+    "unsorted": true,
+    "empty": true
+  },
+  "number": 0,
+  "numberOfElements": 1,
+  "size": 5,
+  "empty": false
+}
+```
 
 ### Get a product detail
+```shell
+curl -X GET --location "http://localhost:8080/product/{id}"
+```
 
-### Add a product to shopping cart
+Example output:
+```json
+{
+  "id": 4,
+  "name": "Shirt A1",
+  "price": 200000.0,
+  "sku": "S00A1W",
+  "color": "white",
+  "brand": "Uniqlo",
+  "category": {
+    "id": 4,
+    "name": "clothing"
+  }
+}
+```
+
+### Add a product to shopping cart (new cart)
+```shell
+curl -X POST --location "http://localhost:8080/cart" \
+    -H "Content-Type: application/json" \
+    -d "{
+          \"productId\": 2,
+          \"amount\": 1
+        }"
+```
+
+Example request in JSON:
+```json
+{
+  "productId": 2,
+  "amount": 1
+}
+```
+
+Example response: 
+```json
+{
+  "cartId": "47264c82-bb4e-4f10-b337-e793c9e669f7",
+  "status": "NEW",
+  "products": [
+    {
+      "product": {
+        "id": 4,
+        "name": "Shirt A1",
+        "price": 200000.0,
+        "sku": "S00A1W",
+        "color": "white",
+        "brand": "Uniqlo",
+        "category": null
+      },
+      "amount": 1
+    }
+  ],
+  "costSummary": {
+    "totalCost": 200000.0
+  }
+}
+```
+
+### Add a product to existing cart
+```shell
+curl -X POST --location "http://localhost:8080/cart" \
+    -H "Content-Type: application/json" \
+    -d "{
+          \"cartId\": \"cartId\",
+          \"productId\": 2,
+          \"amount\": 1
+        }"
+```
+
+Example request in JSON:
+```json
+{
+  "cartId": "049e03e0-8e96-42ff-9f13-c1db45666d16",
+  "productId": 2,
+  "amount": 1
+}
+```
 
 ### Update an existing product in cart
+```shell
+curl -X PUT --location "http://localhost:8080/cart/{cartId}" \
+    -H "Content-Type: application/json" \
+    -d "{
+          \"items\": [
+            {
+              \"productId\": 1,
+              \"amount\": 4
+            }
+          ]
+        }"
+```
+Example request in JSON:
+```json
+{
+  "items": [
+    {
+      "productId": 1,
+      "amount": 4
+    }
+  ]
+}
+```
+
+### Get details of cart
+```shell
+curl -X GET --location "http://localhost:8080/cart/{cartId}
+```
+
+Example response:
+```json
+{
+  "cartId": "47264c82-bb4e-4f10-b337-e793c9e669f7",
+  "status": "NEW",
+  "products": [
+    {
+      "product": {
+        "id": 4,
+        "name": "Shirt A1",
+        "price": 200000.0,
+        "sku": "S00A1W",
+        "color": "white",
+        "brand": "Uniqlo",
+        "category": null
+      },
+      "amount": 1
+    }
+  ],
+  "costSummary": {
+    "totalCost": 200000.0
+  }
+}
+```
 
 ### Checkout cart
+```shell
+curl -X POST --location "http://localhost:8080/cart/checkout/{cartId}" \
+    -H "Content-Type: application/json" \
+    -d "{
+          \"customerName\": \"Vinh Truong\",
+          \"address\": \"HCM\",
+          \"phoneNumber\": \"0776703343\",
+          \"paymentMethod\": \"CASH\"
+        }"
+```
+
+Example request in JSON:
+```json
+{
+  "customerName": "Vinh Truong",
+  "address": "HCM",
+  "phoneNumber": "0776703343",
+  "paymentMethod": "CASH"
+}
+```
+
+Example response:
+```json
+{
+  "id": "ca6e7e5b-d23a-4954-ab62-2c71126536a5",
+  "createdDate": "2022-10-21T00:00:16.279263119+07:00",
+  "amount": 200000.0,
+  "customerName": "Vinh Truong",
+  "address": "HCM",
+  "phoneNumber": "0776703343"
+}
+```
