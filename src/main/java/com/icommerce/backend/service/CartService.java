@@ -33,5 +33,10 @@ public interface CartService {
    */
   void checkout(String cartId, CheckoutRequest request);
 
+  /**
+   * Get details of a cart by ID
+   * @param cartId ID of cart
+   * @throws com.icommerce.backend.domain.exception.InvalidCartException when cartId is not valid
+   */
   CartResponse getDetails(String cartId);
 }

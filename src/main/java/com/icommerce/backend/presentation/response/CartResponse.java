@@ -21,6 +21,7 @@ public class CartResponse {
   private String address;
   private String phoneNumber;
   private List<CartProduct> products;
+  private CostSummary costSummary;
 
   @Getter
   @Setter

@@ -15,12 +15,15 @@ import com.icommerce.backend.presentation.request.UpdateCartRequest.Item;
 import com.icommerce.backend.presentation.response.CartResponse;
 import com.icommerce.backend.service.mapper.CartMapper;
 import com.icommerce.backend.service.mapper.CartProductMapper;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -28,17 +31,20 @@ import org.springframework.util.StringUtils;
 @Service
 public class CartServiceImpl implements CartService {
 
+  private final CostService costService;
   private final ProductRepository productRepository;
   private final CartProductRepository cartProductRepository;
   private final CartRepository cartRepository;
   private final CartProductMapper cartProductMapper;
   private final CartMapper cartMapper;
 
-  public CartServiceImpl(ProductRepository productRepository,
+  public CartServiceImpl(CostService costService,
+      ProductRepository productRepository,
       CartProductRepository cartProductRepository,
       CartRepository cartRepository,
       CartProductMapper cartProductMapper,
       CartMapper cartMapper) {
+    this.costService = costService;
     this.productRepository = productRepository;
     this.cartProductRepository = cartProductRepository;
     this.cartRepository = cartRepository;
@@ -52,26 +58,31 @@ public class CartServiceImpl implements CartService {
     final Cart cart = findOrCreate(request.getCartId());
 
     // find existing product
-    productRepository.findById(request.getProductId())
-        .orElseThrow(createInvalidProductException(request.getProductId()));
+    if (!productRepository.existsById(request.getProductId())) {
+        throw createInvalidProductException(request.getProductId()).get();
+    }
 
     // find existing products in cart
-    final List<CartProduct> cartProductList = findProductsInCart(cart.getId());
-    final var existingProductInCart = cartProductList.stream()
-        .filter(cartProduct -> cartProduct.getProductId().equals(request.getProductId()))
-        .findFirst();
+    final List<CartProduct> existingCartProducts = request.getCartId() == null ?
+        new ArrayList<>() : findProductsInCart(cart.getId());
 
-    // build product in cart
-    final CartProduct addedProduct = existingProductInCart
+    // add new amount to existing product in cart, or create a new one
+    final CartProduct addedProduct = existingCartProducts.stream()
+        .filter(cartProduct -> cartProduct.getProductId().equals(request.getProductId()))
+        .findFirst()
         .map(existingProduct -> {
           existingProduct.setAmount(request.getAmount() + existingProduct.getAmount());
           return existingProduct;
         })
         .orElseGet(() -> buildProductInCart(request, cart));
+
     // save cart product
     cartProductRepository.save(addedProduct);
 
-    return createCartResponse(cart, cartProductList);
+    final var cartProducts = new ArrayList<>(existingCartProducts);
+    cartProducts.add(addedProduct);
+
+    return createCartResponse(cart, cartProducts);
   }
 
   private List<CartProduct> findProductsInCart(UUID cartId) {
@@ -106,6 +117,7 @@ public class CartServiceImpl implements CartService {
         .map(cartProductMapper::toResponse)
         .collect(Collectors.toList());
     cartResponse.setProducts(products);
+    cartResponse.setCostSummary(costService.findCost(cartProductList));
 
     return cartResponse;
   }

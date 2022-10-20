@@ -3,6 +3,7 @@ package com.icommerce.backend.service.mapper;
 import com.icommerce.backend.domain.entity.Cart;
 import com.icommerce.backend.presentation.request.CheckoutRequest;
 import com.icommerce.backend.presentation.response.CartResponse;
+import java.util.UUID;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -18,5 +19,10 @@ public interface CartMapper {
   void updateDetails(CheckoutRequest request, @MappingTarget Cart entity);
 
   @Mapping(target = "products", ignore = true)
+  @Mapping(target = "cartId", source = "id")
   CartResponse toResponse(Cart cart);
+
+  default String stringToUUID(UUID uuid) {
+    return uuid == null ? null : uuid.toString();
+  }
 }
