@@ -12,6 +12,6 @@ public class ProductResponse {
   private BigDecimal price;
   private String sku;
   private String color;
-  private BrandResponse brand;
+  private String brand;
   private CategoryResponse category;
 }

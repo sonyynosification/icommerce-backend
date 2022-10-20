@@ -8,37 +8,25 @@
     <createTable tableName="category">
       <column name="id" type="int">
         <constraints
-          primaryKeyName="pk-category-id"
+          primaryKeyName="pk_category_id"
           primaryKey="true"
         />
       </column>
       <column name="name" type="varchar(255)">
         <constraints
-          uniqueConstraintName="uq-category-name"
+          uniqueConstraintName="uq_category_name"
           unique="true"
         />
       </column>
     </createTable>
-
-    <createTable tableName="brand">
-      <column name="id" type="int">
-        <constraints
-          primaryKeyName="pk-brand-id"
-          primaryKey="true"
-        />
-      </column>
-      <column name="name" type="varchar(255)">
-        <constraints
-          uniqueConstraintName="uq-brand-name"
-          unique="true"
-          nullable="false"
-        />
-      </column>
-    </createTable>
+    <createSequence
+      sequenceName="seq_category_id"
+      incrementBy="1"
+    />
 
     <createTable tableName="product">
       <column name="id" type="bigint">
-        <constraints primaryKeyName="pk-product-id" primaryKey="true" />
+        <constraints primaryKeyName="pk_product_id" primaryKey="true" />
       </column>
       <column name="name" type="varchar(255)">
         <constraints
@@ -48,27 +36,40 @@
       <column name="category_id" type="int" />
       <column name="sku" type="varchar(255)" />
       <column name="price" type="double" />
-      <column name="brand_id" type="int" />
+      <column name="brand" type="varchar(255)" />
       <column name="color" type="varchar(255)" />
     </createTable>
+    <createSequence
+      sequenceName="seq_product_id"
+      incrementBy="1"
+    />
 
     <createTable tableName="cart">
-      <column name="id" type="varchar(64)">
-        <constraints primaryKeyName="pk-cart-id" primaryKey="true" />
+      <column name="id" type="uuid">
+        <constraints primaryKeyName="pk_cart_id" primaryKey="true" />
       </column>
-      <column name="created_date" type="timestamp">
-        <constraints nullable="false" />
-      </column>
-      <column name="updated_date" type="timestamp">
-        <constraints nullable="false" />
-      </column>
+      <column name="customer_name"
+        type="varchar(255)"
+      />
+      <column name="address"
+        type="varchar(255)"
+      />
+      <column name="phone_number"
+        type="varchar(32)"
+      />
+      <column name="status"
+        type="smallint"
+        />
+      <column name="payment_method"
+        type="smallint"
+      />
     </createTable>
 
     <createTable tableName="cart_product">
       <column name="id" type="bigint">
-        <constraints primaryKeyName="pk-cart-product-id" primaryKey="true" />
+        <constraints primaryKeyName="pk_cart_product_id" primaryKey="true" />
       </column>
-      <column name="cart_id" type="varchar(64)">
+      <column name="cart_id" type="uuid">
         <constraints nullable="false" />
       </column>
       <column name="product_id" type="bigint">
@@ -78,5 +79,9 @@
         <constraints nullable="false" />
       </column>
     </createTable>
+    <createSequence
+      sequenceName="seq_cart_product_id"
+      incrementBy="1"
+    />
   </changeSet>
 </databaseChangeLog>

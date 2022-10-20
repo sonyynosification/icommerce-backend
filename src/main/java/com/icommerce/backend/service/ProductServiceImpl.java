@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 @Service
@@ -28,6 +29,7 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public Page<ProductResponse> search(@NonNull SearchProductRequest request) {
     Assert.notNull(request, "request should not be null");
     var predicate = buildPredicate(request);
@@ -51,7 +53,7 @@ public class ProductServiceImpl implements ProductService {
     return QueryBuilder.builder()
         .ifNotBlank(request.getName(), QProduct.product.name::containsIgnoreCase)
         .ifNotNull(request.getCategoryId(), QProduct.product.categoryId::eq)
-        .ifNotNull(request.getBrandId(), QProduct.product.brandId::eq)
+        .ifNotNull(request.getBrand(), QProduct.product.brand::equalsIgnoreCase)
         .ifNotBlank(request.getColor(), QProduct.product.color::equalsIgnoreCase)
         .ifNotNull(request.getMaxPrice(), QProduct.product.price::loe)
         .ifNotNull(request.getMinPrice(), QProduct.product.price::goe)
